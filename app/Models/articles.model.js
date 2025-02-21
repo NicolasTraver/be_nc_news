@@ -39,25 +39,26 @@ exports.selectArticles = async ({ sort_by, order, topic, limit, p }) => {
     index++;
     articleSqlArgs.push(topic);
   }
+  if (sort_by !== "comment_count") {
+    if (expectedSorts.includes(sort_by)) {
+      articleSql += `ORDER BY ${sort_by} `;
+    } else {
+      return Promise.reject({
+        status: 400,
+        message: `Bad Request: ${sort_by} is an invalid query`,
+      });
+    }
 
-  if (expectedSorts.includes(sort_by)) {
-    articleSql += `ORDER BY ${sort_by} `;
-  } else {
-    return Promise.reject({
-      status: 400,
-      message: `Bad Request: ${sort_by} is an invalid query`,
-    });
-  }
-
-  if (expectedOrders.includes(order)) {
-    if (order === "ascending") order = "ASC";
-    if (order === "descending") order = "DESC";
-    articleSql += `${order} `;
-  } else {
-    return Promise.reject({
-      status: 400,
-      message: `Bad Request: ${order} is an invalid query`,
-    });
+    if (expectedOrders.includes(order)) {
+      if (order === "ascending") order = "ASC";
+      if (order === "descending") order = "DESC";
+      articleSql += `${order} `;
+    } else {
+      return Promise.reject({
+        status: 400,
+        message: `Bad Request: ${order} is an invalid query`,
+      });
+    }
   }
   articleSql += `OFFSET $${index} `;
   articleSqlArgs.push((p - 1) * limit);
